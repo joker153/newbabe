@@ -376,8 +376,10 @@ async def cb_handler(client: Client, query: CallbackQuery):
                     file_id=file_id,
                     caption=f_caption,
                     protect_content=True if ident == "filep" else False,
-                        reply_markup=InlineKeyboardMarkup( [ [ InlineKeyboardButton('🎖️ᴄɪɴᴇꜰʟɪx ᴍᴏᴠɪᴇꜱ🎖️', url="https://t.me/CineflixXLinks") ] ] ))
-                )
+                        reply_markup=InlineKeyboardMarkup(
+                            [ [ 
+                                InlineKeyboardButton('🎖️ᴄɪɴᴇꜰʟɪx ᴍᴏᴠɪᴇꜱ🎖️', url="https://t.me/CineflixXLinks") 
+                            ] ] ))
                 await query.answer('Check PM, I have sent files in pm', show_alert=True)
         except UserIsBlocked:
             await query.answer('Unblock the bot mahn !', show_alert=True)
