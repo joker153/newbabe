@@ -624,8 +624,20 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 ]
             ]
             reply_markup = InlineKeyboardMarkup(buttons)
+
             await query.message.edit_reply_markup(reply_markup)
-    await query.answer('Piracy Is Crime')
+
+    elif query.data == "close":
+
+        await query.message.delete()
+
+    elif query.data == 'tips':
+
+        await query.answer("sᴇɴᴅ ᴄᴏʀʀᴇᴄᴛ ᴍᴏᴠɪᴇ/sᴇʀɪᴇs ɴᴀᴍᴇ ғᴏʀ ʙᴇᴛᴛᴇʀ ʀᴇsᴜʟᴛs .\nᴛᴏ ɢᴇᴛ ʙᴇᴛᴛᴇʀ ʀᴇsᴜʟᴛ ғᴏʀ sᴇʀɪᴇs sᴇᴀʀᴄʜ ʟɪᴋᴇ ᴇxᴀᴍᴘʟᴇ ɢɪᴠᴇɴ, Eg - Peaky Blinders S01E01\n\n © 𝐓𝐨𝐯𝐢𝐧𝐨𝐗𝐚𝐮𝐭𝐨𝐟𝐢𝐥𝐭𝐞𝐫𝐛𝐨𝐭", True)
+
+    try: await query.answer('Your Results are there in Filter Button') 
+
+    except: pass 
 
 
 async def auto_filter(client, msg, spoll=False):
