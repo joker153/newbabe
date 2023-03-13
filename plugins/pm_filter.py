@@ -876,7 +876,10 @@ async def manual_filters(client, message, text=False):
                             reply_markup=InlineKeyboardMarkup(button),
                             reply_to_message_id=reply_id
                         )
-a
+                     await asyncio.sleep(DELETE_TIME)
+
+                     await fmsg.delete()
+
                 
                 except Exception as e:
                     logger.exception(e)
