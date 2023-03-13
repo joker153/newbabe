@@ -833,8 +833,6 @@ async def advantage_spell_chok(msg):
     btn.append([InlineKeyboardButton(text="Close", callback_data=f'spolling#{user}#close_spellcheck')])
     await msg.reply("I couldn't find anything related to that\nDid you mean any one of these?",
                     reply_markup=InlineKeyboardMarkup(btn))
-    await asyncio.sleep(DELETE_TIME)
-    await fmsg.delete()
 
 async def manual_filters(client, message, text=False):
     group_id = message.chat.id
@@ -878,6 +876,11 @@ async def manual_filters(client, message, text=False):
                             reply_markup=InlineKeyboardMarkup(button),
                             reply_to_message_id=reply_id
                         )
+                finally:
+                    # Auto-delete the message after 30 seconds
+                    time.sleep(30)
+                    await client.delete_messages(group_id, message.id)
+                       
                 except Exception as e:
                     logger.exception(e)
                 break
