@@ -877,7 +877,6 @@ async def manual_filters(client, message, text=False):
                             reply_to_message_id=reply_id
                         )
                      await asyncio.sleep(DELETE_TIME)
-
                      await fmsg.delete()
 
                 
