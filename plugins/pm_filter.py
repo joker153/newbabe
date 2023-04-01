@@ -31,7 +31,7 @@ SPELL_CHECK = {}
 
 
 @Client.on_chat_join_request(filters.group | filters.channel)
-async def autoapprove(client: pr0fess0r_99, message: ChatJoinRequest):
+async def autoapprove(client: Client, message: ChatJoinRequest):
     chat = message.chat
     user = message.from_user
     print(f"{user.first_name} Joined 🤝") # Logs
