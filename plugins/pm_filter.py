@@ -30,12 +30,12 @@ BUTTONS = {}
 SPELL_CHECK = {}
 
 
-# Auto-approve join requests
 @Client.on_chat_join_request(filters.group | filters.channel)
 async def autoapprove(client: Client, message: ChatJoinRequest):
     chat = message.chat
     user = message.from_user
-    
+    print(f"{user.first_name} Joined 🤝") # Logs
+
     # Approve new join requests
     await client.approve_chat_join_request(chat_id=chat.id, user_id=user.id)
 
@@ -46,7 +46,6 @@ async def autoapprove(client: Client, message: ChatJoinRequest):
             await client.approve_chat_join_request(chat_id=chat.id, user_id=member.user.id)
             print(f"Approved pending join request from user ID {member.user.id}")
 
-    # Send welcome message to new member
     if APPROVED == "on":
         welcome_text = WELCOME_TEXT.format(mention=user.mention, title=chat.title)
         button = None
