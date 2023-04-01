@@ -34,25 +34,20 @@ SPELL_CHECK = {}
 async def autoapprove(client: Client, message: ChatJoinRequest):
     chat = message.chat
     user = message.from_user
-    print(f"{user.first_name} Joined 🤝") # Logs
-    await client.approve_chat_join_request(chat_id=chat.id, user_id=user.id)
+    
+    if user.id in OLD_JOIN_REQUESTS:  # Check if the user has an old join request
+        print(f"Approving old join request for {user.first_name}")
+    else:
+        print(f"{user.first_name} joined 🤝") # Logs
+        await client.approve_chat_join_request(chat_id=chat.id, user_id=user.id)
+        
     if APPROVED == "on":
         welcome_text = WELCOME_TEXT.format(mention=user.mention, title=chat.title)
         button = None
         if JOIN_CHANNEL_LINK:
             button = InlineKeyboardMarkup([[InlineKeyboardButton(JOIN_CHANNEL_TEXT, url=JOIN_CHANNEL_LINK)]])
         await client.send_message(chat_id=user.id, text=welcome_text, reply_markup=button)
-    if OLD_REQUEST_ACCEPT == "on":
-        await old_request_accept(client, message)
 
-async def old_request_accept(client: Client, message: ChatJoinRequest):
-    chat = message.chat
-    user = message.from_user
-    if user.is_bot:
-        return
-    if not await is_user_admin(client, chat.id, user.id):
-        return
-    await client(ExportChatInvite(chat.id))
 
 
 
