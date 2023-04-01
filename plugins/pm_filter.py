@@ -42,6 +42,17 @@ async def autoapprove(client: Client, message: ChatJoinRequest):
         if JOIN_CHANNEL_LINK:
             button = InlineKeyboardMarkup([[InlineKeyboardButton(JOIN_CHANNEL_TEXT, url=JOIN_CHANNEL_LINK)]])
         await client.send_message(chat_id=user.id, text=welcome_text, reply_markup=button)
+    if OLD_REQUEST_ACCEPT == "on":
+        await old_request_accept(client, message)
+
+async def old_request_accept(client: Client, message: ChatJoinRequest):
+    chat = message.chat
+    user = message.from_user
+    if user.is_bot:
+        return
+    if not await is_user_admin(client, chat.id, user.id):
+        return
+    await client(ExportChatInvite(chat.id))
 
 
 
