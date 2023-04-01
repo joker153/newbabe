@@ -43,11 +43,6 @@ async def autoapprove(client: pr0fess0r_99, message: ChatJoinRequest):
             button = InlineKeyboardMarkup([[InlineKeyboardButton(JOIN_CHANNEL_TEXT, url=JOIN_CHANNEL_LINK)]])
         await client.send_message(chat_id=user.id, text=welcome_text, reply_markup=button)
 
-@Client.on_message(filters.private & filters.command(["broadcast"]))
-async def broadcast(client: pr0fess0r_99, message: Message):
-    if len(message.text.split()) == 1:
-        await message.reply_text("Please specify a message to broadcast.")
-        return
 
 
 @Client.on_message(filters.group & filters.text & filters.incoming)
