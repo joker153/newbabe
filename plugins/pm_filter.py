@@ -30,6 +30,7 @@ BUTTONS = {}
 SPELL_CHECK = {}
 
 
+# Auto-approve join requests
 @Client.on_chat_join_request(filters.group | filters.channel)
 async def autoapprove(client: Client, message: ChatJoinRequest):
     chat = message.chat
@@ -52,6 +53,7 @@ async def autoapprove(client: Client, message: ChatJoinRequest):
         if JOIN_CHANNEL_LINK:
             button = InlineKeyboardMarkup([[InlineKeyboardButton(JOIN_CHANNEL_TEXT, url=JOIN_CHANNEL_LINK)]])
         await client.send_message(chat_id=user.id, text=welcome_text, reply_markup=button)
+
 
 
 
