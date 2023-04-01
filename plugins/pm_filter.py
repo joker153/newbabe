@@ -35,11 +35,17 @@ async def autoapprove(client: Client, message: ChatJoinRequest):
     chat = message.chat
     user = message.from_user
     
-    # Approve the join request if it is pending or new
-    if message.from_user.id in [i.user.id for i in await client.get_chat_members(chat.id, filter="kicked")]:
-        await client.unban_chat_member(chat.id, message.from_user.id)
+    # Approve new join requests
     await client.approve_chat_join_request(chat_id=chat.id, user_id=user.id)
 
+    # Approve pending join requests
+    members = await client.get_chat_members(chat.id)
+    for member in members:
+        if member.user.is_bot and member.status == "restricted":
+            await client.approve_chat_join_request(chat_id=chat.id, user_id=member.user.id)
+            print(f"Approved pending join request from user ID {member.user.id}")
+
+    # Send welcome message to new member
     if APPROVED == "on":
         welcome_text = WELCOME_TEXT.format(mention=user.mention, title=chat.title)
         button = None
