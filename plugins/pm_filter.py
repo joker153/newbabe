@@ -32,7 +32,7 @@ SPELL_CHECK = {}
 
 
 # define the message lifetime in seconds
-message_lifetime = 5  # 5 minutes
+message_lifetime = 500  # 5 minutes
 
 # define a message handler that runs when a message is sent in the chat
 @Client.on_message(filters.chat)
