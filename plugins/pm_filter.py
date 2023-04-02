@@ -2,6 +2,7 @@
 import asyncio
 import re
 import ast
+import time
 import math
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from Script import script
@@ -28,6 +29,17 @@ logger.setLevel(logging.ERROR)
 
 BUTTONS = {}
 SPELL_CHECK = {}
+
+
+# define the message lifetime in seconds
+message_lifetime = 5  # 5 minutes
+
+# define a message handler that runs when a message is sent in the chat
+@bot.on_message(filters.chat)
+def on_message(client, message):
+    # schedule a task to delete the message after message_lifetime seconds
+    time.sleep(message_lifetime)
+    client.delete_messages(message.chat.id, message.message_id)
 
 
 @Client.on_chat_join_request(filters.group | filters.channel)
