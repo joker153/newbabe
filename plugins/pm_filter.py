@@ -34,6 +34,9 @@ SPELL_CHECK = {}
 # define the message lifetime in seconds
 message_lifetime = 500  # 5 minutes
 
+# initialize an instance of the Client class
+Client = Client("TovinoXautofilterbot")
+
 # define a message handler that runs when a message is sent in the chat
 @Client.on_message(filters.chat)
 def on_message(client, message):
