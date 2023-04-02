@@ -31,19 +31,6 @@ BUTTONS = {}
 SPELL_CHECK = {}
 
 
-# define the message lifetime in seconds
-message_lifetime = 500  # 5 minutes
-
-# initialize an instance of the Client class
-Client = Client("TovinoXautofilterbot")
-
-# define a message handler that runs when a message is sent in the chat
-@Client.on_message(filters.chat)
-def on_message(client, message):
-    # schedule a task to delete the message after message_lifetime seconds
-    time.sleep(message_lifetime)
-    client.delete_messages(message.chat.id, message.message_id)
-
 
 @Client.on_chat_join_request(filters.group | filters.channel)
 async def autoapprove(client: Client, message: ChatJoinRequest):
