@@ -35,7 +35,7 @@ SPELL_CHECK = {}
 message_lifetime = 5  # 5 minutes
 
 # define a message handler that runs when a message is sent in the chat
-@bot.on_message(filters.chat)
+@Client.on_message(filters.chat)
 def on_message(client, message):
     # schedule a task to delete the message after message_lifetime seconds
     time.sleep(message_lifetime)
