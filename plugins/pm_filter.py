@@ -670,7 +670,7 @@ async def auto_filter(client, msg, spoll=False):
             return
         if 2 < len(message.text) < 100:
             search = message.text
-            files, offset, total_results = await get_search_results(query=search.lower(), offset=0, filter=True)
+            files, offset, total_results = await get_search_results(search.lower(), 0, True)
             if not files:
                 if settings["spell_check"]:
                     return await advantage_spell_chok(msg)
@@ -703,26 +703,6 @@ async def auto_filter(client, msg, spoll=False):
                     text=f"{get_size(file.file_size)}",
                     callback_data=f'{pre}#{file.file_id}',
                 ),
-            ]
-            for file in files
-        ]
-    if offset != 0:
-        btn.append(
-            [
-                InlineKeyboardButton(text="<<", callback_data=f"prev#{offset - 10}"),
-                InlineKeyboardButton(text="Back 🔙", callback_data=f"back#{msg.message.message_id}"),
-                InlineKeyboardButton(text=">>", callback_data=f"next#{offset + 10}"),
-            ]
-        )
-    else:
-        btn.append([InlineKeyboardButton(text="Back 🔙", callback_data=f"back#{msg.message.message_id}")])
-    btn.append([InlineKeyboardButton(text="❌ Close ❌", callback_data="cls")])
-    return await client.edit_message_reply_markup(
-        chat_id=message.chat.id,
-        message_id=message.message_id,
-        reply_markup=InlineKeyboardMarkup(btn),
-    ),
-
             ]
             for file in files
         ]
