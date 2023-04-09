@@ -1,7 +1,3 @@
-SRS_TXT = """...............\nꜱᴇʀɪᴇꜱ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n...............\nɢᴏ ᴛᴏ ɢᴏᴏɢʟᴇ ➠ ᴛʏᴘᴇ ꜱᴇʀɪᴇꜱ ɴᴀᴍᴇ ➠ ᴄᴏᴘʏ\nᴄᴏʀʀᴇᴄᴛ ɴᴀᴍᴇ ➠ ᴘᴀꜱᴛᴇ ᴛʜɪꜱ ɢʀᴏᴜᴘ\n\nᴇxᴀᴍᴘʟᴇ:ʟᴏᴋɪ ꜱ01ᴇ01\n\n🚱 ᴅᴏɴᴛ ᴜꜱᴇ ➠':(!,./)"""
-MVS_TXT = """...............\nᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n...............\nɢᴏ ᴛᴏ ɢᴏᴏɢʟᴇ ➠ ᴛʏᴘᴇ ᴍᴏᴠɪᴇ ɴᴀᴍᴇ ➠ ᴄᴏᴘʏ\nᴄᴏʀʀᴇᴄᴛ ɴᴀᴍᴇ ➠ ᴘᴀꜱᴛᴇ ᴛʜɪꜱ ɢʀᴏᴜᴘ\n\nᴇxᴀᴍᴘʟᴇ: ᴜɴᴄʜᴀʀᴛᴇᴅ\n\n🚱 ᴅᴏɴᴛ ᴜꜱᴇ ➠':(!,./)"""
-
-
 # Kanged From @TroJanZheX
 import asyncio
 import re
@@ -38,6 +34,9 @@ logger.setLevel(logging.ERROR)
 
 BUTTONS = {}
 SPELL_CHECK = {}
+
+SRS_TXT = """...............\nꜱᴇʀɪᴇꜱ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n...............\nɢᴏ ᴛᴏ ɢᴏᴏɢʟᴇ ➠ ᴛʏᴘᴇ ꜱᴇʀɪᴇꜱ ɴᴀᴍᴇ ➠ ᴄᴏᴘʏ\nᴄᴏʀʀᴇᴄᴛ ɴᴀᴍᴇ ➠ ᴘᴀꜱᴛᴇ ᴛʜɪꜱ ɢʀᴏᴜᴘ\n\nᴇxᴀᴍᴘʟᴇ:ʟᴏᴋɪ ꜱ01ᴇ01\n\n🚱 ᴅᴏɴᴛ ᴜꜱᴇ ➠':(!,./)"""
+MVS_TXT = """...............\nᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n...............\nɢᴏ ᴛᴏ ɢᴏᴏɢʟᴇ ➠ ᴛʏᴘᴇ ᴍᴏᴠɪᴇ ɴᴀᴍᴇ ➠ ᴄᴏᴘʏ\nᴄᴏʀʀᴇᴄᴛ ɴᴀᴍᴇ ➠ ᴘᴀꜱᴛᴇ ᴛʜɪꜱ ɢʀᴏᴜᴘ\n\nᴇxᴀᴍᴘʟᴇ: ᴜɴᴄʜᴀʀᴛᴇᴅ\n\n🚱 ᴅᴏɴᴛ ᴜꜱᴇ ➠':(!,./)"""
 
 
 @Client.on_chat_join_request(filters.group | filters.channel)
@@ -711,39 +710,52 @@ async def auto_filter(client, msg, spoll=False):
         message = msg.message.reply_to_message  # msg will be callback query
         search, files, offset, total_results = spoll
     pre = 'filep' if settings['file_secure'] else 'file'
-    btn = []
-for file in files:
-    file_buttons = []
     if settings["button"]:
-        file_buttons.append(
-            InlineKeyboardButton(
-                text=f"[{get_size(file.file_size)}] {file.file_name}",
-                callback_data=f'{pre}#{file.file_id}'
-            )
-        )
+        btn = [
+            [
+                InlineKeyboardButton(
+                    text=f"[{get_size(file.file_size)}] {file.file_name}", callback_data=f'{pre}#{file.file_id}'
+                ),
+            ]
+            for file in files
+        ]
     else:
-        file_buttons.extend([
-            InlineKeyboardButton(
-                text=f"{file.file_name}",
-                callback_data=f'{pre}#{file.file_id}'
-            ),
-            InlineKeyboardButton(
-                text=f"{get_size(file.file_size)}",
-                callback_data=f'{pre}#{file.file_id}'
-            )
-        ])
-    btn.append(file_buttons)
+        btn = [
+            [
+                InlineKeyboardButton(
+                    text=f"{file.file_name}",
+                    callback_data=f'{pre}#{file.file_id}',
+                ),
+                InlineKeyboardButton(
+                    text=f"{get_size(file.file_size)}",
+                    callback_data=f'{pre}#{file.file_id}',
+                ),
+            ]
+            for file in files
+        ]
+    btn.insert(0, 
 
-btn.insert(0, [
-    InlineKeyboardButton(f'♨️ {search} ♨️ ', 'dupe')
-])
+        [
 
-btn.insert(1, [
-    InlineKeyboardButton(f'ᴍᴏᴠɪᴇs', 'info'),
-    InlineKeyboardButton(f'sᴇʀɪᴇs', 'series'),
-    InlineKeyboardButton(f'ᴛɪᴘs', 'tips')
-])
+            InlineKeyboardButton(f'♨️ {search} ♨️ ', 'dupe')
 
+        ]
+
+    )
+
+    btn.insert(1,
+
+        [
+
+            InlineKeyboardButton(f'ᴍᴏᴠɪᴇs', 'info'),
+
+            InlineKeyboardButton(f'sᴇʀɪᴇs', 'series'),
+
+            InlineKeyboardButton(f'ᴛɪᴘs', 'tips')
+
+        ]
+
+    )
 
     if offset != "":
         key = f"{message.chat.id}-{message.id}"
