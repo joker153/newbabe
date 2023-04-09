@@ -711,56 +711,39 @@ async def auto_filter(client, msg, spoll=False):
         message = msg.message.reply_to_message  # msg will be callback query
         search, files, offset, total_results = spoll
     pre = 'filep' if settings['file_secure'] else 'file'
+    btn = []
+for file in files:
+    file_buttons = []
     if settings["button"]:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"[{get_size(file.file_size)}] {file.file_name}", callback_data=f'{pre}#{file.file_id}'
-                ),
-            ]
-            for file in files
-        ]
-        # Add logging statements
-        print(f"files: {files}, offset: {offset}, total_results: {total_results}")
+        file_buttons.append(
+            InlineKeyboardButton(
+                text=f"[{get_size(file.file_size)}] {file.file_name}",
+                callback_data=f'{pre}#{file.file_id}'
+            )
+        )
     else:
-        btn = [
-            [
-                InlineKeyboardButton(
-                    text=f"{file.file_name}",
-                    callback_data=f'{pre}#{file.file_id}',
-                ),
-                InlineKeyboardButton(
-                    text=f"{get_size(file.file_size)}",
-                    callback_data=f'{pre}#{file.file_id}',
-                ),
-            ]
-            for file in files
-        ]
-        # Add logging statements
-        print(f"files: {files}, offset: {offset}, total_results: {total_results}")
-    btn.insert(0, 
+        file_buttons.extend([
+            InlineKeyboardButton(
+                text=f"{file.file_name}",
+                callback_data=f'{pre}#{file.file_id}'
+            ),
+            InlineKeyboardButton(
+                text=f"{get_size(file.file_size)}",
+                callback_data=f'{pre}#{file.file_id}'
+            )
+        ])
+    btn.append(file_buttons)
 
-        [
+btn.insert(0, [
+    InlineKeyboardButton(f'♨️ {search} ♨️ ', 'dupe')
+])
 
-            InlineKeyboardButton(f'♨️ {search} ♨️ ', 'dupe')
+btn.insert(1, [
+    InlineKeyboardButton(f'ᴍᴏᴠɪᴇs', 'info'),
+    InlineKeyboardButton(f'sᴇʀɪᴇs', 'series'),
+    InlineKeyboardButton(f'ᴛɪᴘs', 'tips')
+])
 
-        ]
-
-    )
-
-    btn.insert(1,
-
-        [
-
-            InlineKeyboardButton(f'ᴍᴏᴠɪᴇs', 'info'),
-
-            InlineKeyboardButton(f'sᴇʀɪᴇs', 'series'),
-
-            InlineKeyboardButton(f'ᴛɪᴘs', 'tips')
-
-        ]
-
-    )
 
     if offset != "":
         key = f"{message.chat.id}-{message.id}"
