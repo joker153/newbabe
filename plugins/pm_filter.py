@@ -10,7 +10,7 @@ import pyrogram
 from database.connections_mdb import active_connection, all_connections, delete_connection, if_active, make_active, \
     make_inactive
 from info import ADMINS, AUTH_CHANNEL, AUTH_USERS, CUSTOM_FILE_CAPTION, AUTH_GROUPS, P_TTI_SHOW_OFF, IMDB, \
-    SINGLE_BUTTON, SPELL_CHECK_REPLY, IMDB_TEMPLATE, DELETE_TIME, APPROVED, WELCOME_TEXT, JOIN_CHANNEL_TEXT, JOIN_CHANNEL_LINK, MAX_B_TN, SPELL_IMG
+    SINGLE_BUTTON, SPELL_CHECK_REPLY, IMDB_TEMPLATE, DELETE_TIME, APPROVED, WELCOME_TEXT, JOIN_CHANNEL_TEXT, JOIN_CHANNEL_LINK
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message, User, ChatJoinRequest
 from pyrogram import Client, filters, enums
 from pyrogram.errors import FloodWait, UserIsBlocked, MessageNotModified, PeerIdInvalid
@@ -21,11 +21,6 @@ from database.filters_mdb import (
     del_all,
     find_filter,
     get_filters,
-)
-from database.gfilters_mdb import (
-    find_gfilter,
-    get_gfilters,
-    del_allg
 )
 import logging
 
@@ -53,33 +48,28 @@ async def autoapprove(client: Client, message: ChatJoinRequest):
 
 
 
-@Client.on_message(filters.group & filters.text & filters.incoming)
+@Client.on_message(filters.private | filters.group & filters.text & filters.incoming)
 async def give_filter(client, message):
     k = await manual_filters(client, message)
     if k == False:
         await auto_filter(client, message)
 
-@Client.on_message(filters.private & filters.text & filters.incoming)
-async def pv_filter(client, message):
-    kd = await global_filters(client, message)
-    if kd == False:
-        await auto_filter(client, message)
 
 @Client.on_callback_query(filters.regex(r"^next"))
 async def next_page(bot, query):
     ident, req, key, offset = query.data.split("_")
     if int(req) not in [query.from_user.id, 0]:
-        return await query.answer(script.ALRT_TXT.format(query.from_user.first_name), show_alert=True)
+        return await query.answer("oKda", show_alert=True)
     try:
         offset = int(offset)
     except:
         offset = 0
     search = BUTTONS.get(key)
     if not search:
-        await query.answer(script.OLD_ALRT_TXT.format(query.from_user.first_name),show_alert=True)
+        await query.answer("You are using one of my old messages, please send the request again.", show_alert=True)
         return
 
-    files, n_offset, total = await get_search_results(query.message.chat.id, search, offset=offset, filter=True)
+    files, n_offset, total = await get_search_results(search, offset=offset, filter=True)
     try:
         n_offset = int(n_offset)
     except:
@@ -92,7 +82,7 @@ async def next_page(bot, query):
         btn = [
             [
                 InlineKeyboardButton(
-                    text=f"🔖{get_size(file.file_size)}🔮{file.file_name}", callback_data=f'files#{file.file_id}'
+                    text=f"[{get_size(file.file_size)}] {file.file_name}", callback_data=f'files#{file.file_id}'
                 ),
             ]
             for file in files
@@ -110,137 +100,44 @@ async def next_page(bot, query):
             ]
             for file in files
         ]
-    try:
-        if settings['auto_delete']:
-            btn.insert(0, 
-            [
-                InlineKeyboardButton(f'😇 Info', 'tips'),
-                InlineKeyboardButton(f'📝 𝖳𝗂𝗉𝗌', 'info')
-            ]
-            )
 
-        else:
-            btn.insert(0, 
-            [
-                InlineKeyboardButton(f'😇 Info', 'tips'),
-                InlineKeyboardButton(f'📝 𝖳𝗂𝗉𝗌', 'info')
-            ]
-            )
-                
-    except KeyError:
-        grpid = await active_connection(str(query.message.from_user.id))
-        await save_group_settings(grpid, 'auto_delete', True)
-        settings = await get_settings(query.message.chat.id)
-        if settings['auto_delete']:
-            btn.insert(0, 
-            [
-                InlineKeyboardButton(f'😇 Info', 'tips'),
-                InlineKeyboardButton(f'📝 𝖳𝗂𝗉𝗌', 'info')
-            ]
-            )
+    btn.insert(0, 
+        [
+            InlineKeyboardButton(f'♨️ {search} ♨️ ', 'dupe')
+        ]
+    )
+    btn.insert(1,
+        [ 
+            InlineKeyboardButton(f'ᴍᴏᴠɪᴇs', 'dupe'),
+            InlineKeyboardButton(f'sᴇʀɪᴇs', 'dupe'),
+            InlineKeyboardButton(f'ᴛɪᴘs', 'tips')
+        ]
+    )
 
-        else:
-            btn.insert(0, 
+    if 0 < offset <= 10:
+        off_set = 0
+    elif offset == 0:
+        off_set = None
+    else:
+        off_set = offset - 10
+    if n_offset == 0:
+        btn.append(
+            [InlineKeyboardButton("⏪ BACK", callback_data=f"next_{req}_{key}_{off_set}"),
+             InlineKeyboardButton(f"📃 Pages {math.ceil(int(offset) / 10) + 1} / {math.ceil(total / 10)}",
+                                  callback_data="pages")]
+        )
+    elif off_set is None:
+        btn.append(
+            [InlineKeyboardButton(f"🗓 {math.ceil(int(offset) / 10) + 1} / {math.ceil(total / 10)}", callback_data="pages"),
+             InlineKeyboardButton("NEXT ⏩", callback_data=f"next_{req}_{key}_{n_offset}")])
+    else:
+        btn.append(
             [
-                InlineKeyboardButton(f'😇 Info', 'tips'),
-                InlineKeyboardButton(f'📝 𝖳𝗂𝗉𝗌', 'info')
-            ]
-            )
-    try:
-        settings = await get_settings(query.message.chat.id)
-        if settings['max_btn']:
-            if 0 < offset <= 10:
-                off_set = 0
-            elif offset == 0:
-                off_set = None
-            else:
-                off_set = offset - 10
-            if n_offset == 0:
-                btn.append(
-                    [InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"), InlineKeyboardButton(f"{math.ceil(int(offset)/10)+1} / {math.ceil(total/10)}", callback_data="pages")]
-                )
-            elif off_set is None:
-                btn.append([InlineKeyboardButton("📃", callback_data="pages"), InlineKeyboardButton(f"{math.ceil(int(offset)/10)+1} / {math.ceil(total/10)}", callback_data="pages"), InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")])
-            else:
-                btn.append(
-                    [
-                        InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"),
-                        InlineKeyboardButton(f"{math.ceil(int(offset)/10)+1} / {math.ceil(total/10)}", callback_data="pages"),
-                        InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")
-                    ],
-                )
-        else:
-            if 0 < offset <= int(MAX_B_TN):
-                off_set = 0
-            elif offset == 0:
-                off_set = None
-            else:
-                off_set = offset - int(MAX_B_TN)
-            if n_offset == 0:
-                btn.append(
-                    [InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"), InlineKeyboardButton(f"{math.ceil(int(offset)/int(MAX_B_TN))+1} / {math.ceil(total/int(MAX_B_TN))}", callback_data="pages")]
-                )
-            elif off_set is None:
-                btn.append([InlineKeyboardButton("📃", callback_data="pages"), InlineKeyboardButton(f"{math.ceil(int(offset)/int(MAX_B_TN))+1} / {math.ceil(total/int(MAX_B_TN))}", callback_data="pages"), InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")])
-            else:
-                btn.append(
-                    [
-                        InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"),
-                        InlineKeyboardButton(f"{math.ceil(int(offset)/int(MAX_B_TN))+1} / {math.ceil(total/int(MAX_B_TN))}", callback_data="pages"),
-                        InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")
-                    ],
-                )
-    except KeyError:
-        await save_group_settings(query.message.chat.id, 'max_btn', False)
-        settings = await get_settings(query.message.chat.id)
-        if settings['max_btn']:
-            if 0 < offset <= 10:
-                off_set = 0
-            elif offset == 0:
-                off_set = None
-            else:
-                off_set = offset - 10
-            if n_offset == 0:
-                btn.append(
-                    [InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"), InlineKeyboardButton(f"{math.ceil(int(offset)/10)+1} / {math.ceil(total/10)}", callback_data="pages")]
-                )
-            elif off_set is None:
-                btn.append([InlineKeyboardButton("📃", callback_data="pages"), InlineKeyboardButton(f"{math.ceil(int(offset)/10)+1} / {math.ceil(total/10)}", callback_data="pages"), InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")])
-            else:
-                btn.append(
-                    [
-                        InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"),
-                        InlineKeyboardButton(f"{math.ceil(int(offset)/10)+1} / {math.ceil(total/10)}", callback_data="pages"),
-                        InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")
-                    ],
-                )
-        else:
-            if 0 < offset <= int(MAX_B_TN):
-                off_set = 0
-            elif offset == 0:
-                off_set = None
-            else:
-                off_set = offset - int(MAX_B_TN)
-            if n_offset == 0:
-                btn.append(
-                    [InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"), InlineKeyboardButton(f"{math.ceil(int(offset)/int(MAX_B_TN))+1} / {math.ceil(total/int(MAX_B_TN))}", callback_data="pages")]
-                )
-            elif off_set is None:
-                btn.append([InlineKeyboardButton("📃", callback_data="pages"), InlineKeyboardButton(f"{math.ceil(int(offset)/int(MAX_B_TN))+1} / {math.ceil(total/int(MAX_B_TN))}", callback_data="pages"), InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")])
-            else:
-                btn.append(
-                    [
-                        InlineKeyboardButton("◀️ 𝖡𝖠𝖢𝖪", callback_data=f"next_{req}_{key}_{off_set}"),
-                        InlineKeyboardButton(f"{math.ceil(int(offset)/int(MAX_B_TN))+1} / {math.ceil(total/int(MAX_B_TN))}", callback_data="pages"),
-                        InlineKeyboardButton("𝖭𝖤𝖷𝖳 ▶️", callback_data=f"next_{req}_{key}_{n_offset}")
-                    ],
-                )
-    btn.insert(1, [
-        InlineKeyboardButton("📤 𝖲𝖾𝗇𝖽 𝖠𝗅𝗅 𝖥𝗂𝗅𝖾𝗌 📤", callback_data=f"send_fall#files#{key}#{offset}")
-    ])
-    btn.insert(0, [
-        InlineKeyboardButton(f'🎬 {search} 🎬', 'rkbtn')
-    ])
+                InlineKeyboardButton("⏪ BACK", callback_data=f"next_{req}_{key}_{off_set}"),
+                InlineKeyboardButton(f"🗓 {math.ceil(int(offset) / 10) + 1} / {math.ceil(total / 10)}", callback_data="pages"),
+                InlineKeyboardButton("NEXT ⏩", callback_data=f"next_{req}_{key}_{n_offset}")
+            ],
+        )
     try:
         await query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(btn)
@@ -250,55 +147,38 @@ async def next_page(bot, query):
     await query.answer()
 
 
-
-@Client.on_callback_query(filters.regex(r"^spol"))
+@Client.on_callback_query(filters.regex(r"^spolling"))
 async def advantage_spoll_choker(bot, query):
-    _, key, user, movie_ = query.data.split('#')
-    movies = SPELL_CHECK.get(key)
-    if not movies:
-        return await query.answer(script.OLD_ALRT_TXT.format(query.from_user.first_name), show_alert=True)
+    _, user, movie_ = query.data.split('#')
     if int(user) != 0 and query.from_user.id != int(user):
-        return await query.answer(script.ALRT_TXT.format(query.from_user.first_name), show_alert=True)
+        return await query.answer("okDa", show_alert=True)
     if movie_ == "close_spellcheck":
         return await query.message.delete()
+    movies = SPELL_CHECK.get(query.message.reply_to_message.id)
+    if not movies:
+        return await query.answer("You are clicking on an old button which is expired.", show_alert=True)
     movie = movies[(int(movie_))]
-    await query.answer(script.TOP_ALRT_MSG)
-    gl = await global_filters(bot, query.message, text=movie)
-    if gl == False:
-        k = await manual_filters(bot, query.message, text=movie)
-        if k == False:
-            files, offset, total_results = await get_search_results(query.message.chat.id, movie, offset=0, filter=True)
-            if files:
-                k = (movie, files, offset, total_results)
-                await auto_filter(bot, query, k)
-            else:
-                reqstr1 = query.from_user.id if query.from_user else 0
-                reqstr = await bot.get_users(reqstr1)
-                if NO_RESULTS_MSG:
-                    await bot.send_message(chat_id=LOG_CHANNEL, text=(script.NORSLTS.format(reqstr.id, reqstr.mention, movie)))
-                k = await query.message.edit(script.MVE_NT_FND)
-                await asyncio.sleep(10)
-                await k.delete()
+    await query.answer('Checking for Movie in database...')
+    k = await manual_filters(bot, query.message, text=movie)
+    if k == False:
+        files, offset, total_results = await get_search_results(movie, offset=0, filter=True)
+        if files:
+            k = (movie, files, offset, total_results)
+            await auto_filter(bot, query, k)
+        else:
+            k = await query.message.edit('This Movie Not Found In DataBase')
+            await asyncio.sleep(10)
+            await k.delete()
 
 
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
-   async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
-    elif query.data == "gfiltersdeleteallconfirm":
-        await del_allg(query.message, 'gfilters')
-        await query.answer("Done !")
-        return
-    elif query.data == "gfiltersdeleteallcancel": 
-        await query.message.reply_to_message.delete()
-        await query.message.delete()
-        await query.answer("Process Cancelled !")
-        return
     elif query.data == "delallconfirm":
         userid = query.from_user.id
         chat_type = query.message.chat.type
-        
+
         if chat_type == enums.ChatType.PRIVATE:
             grpid = await active_connection(str(userid))
             if grpid is not None:
@@ -470,17 +350,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 "Your connected group details ;\n\n",
                 reply_markup=InlineKeyboardMarkup(buttons)
             )
-    elif "gfilteralert" in query.data:
-        grp_id = query.message.chat.id
-        i = query.data.split(":")[1]
-        keyword = query.data.split(":")[2]
-        reply_text, btn, alerts, fileid = await find_gfilter('gfilters', keyword)
-        if alerts is not None:
-            alerts = ast.literal_eval(alerts)
-            alert = alerts[int(i)]
-            alert = alert.replace("\\n", "\n").replace("\\t", "\t")
-            await query.answer(alert, show_alert=True)
-            
     elif "alertmessage" in query.data:
         grp_id = query.message.chat.id
         i = query.data.split(":")[1]
@@ -782,10 +651,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "close":
 
         await query.message.delete()
-        
-    elif query.data == 'info':
-        await query.answer("𝗥𝗲𝗾𝘂𝗲𝘀𝘁𝘀 𝗙𝗼𝗿𝗺𝗮𝘁𝘀\n\n• 𝖲𝗈𝗅𝗈 2017\n• 𝖣𝗁𝗈𝗈𝗆 3 𝖧𝗂𝗇𝖽𝗂\n• 𝖪𝗎𝗋𝗎𝗉 𝖪𝖺𝗇𝗇𝖺𝖽𝖺\n• 𝖣𝖺𝗋𝗄 𝗌01\n• 𝖲𝗁𝖾 𝖧𝗎𝗅𝗄 720𝗉\n• 𝖥𝗋𝗂𝖾𝗇𝖽𝗌 𝗌03 1080𝗉\n\n‼️𝗗𝗼𝗻𝘁 𝗮𝗱𝗱 𝘄𝗼𝗿𝗱𝘀 & 𝘀𝘆𝗺𝗯𝗼𝗹𝘀  , . - 𝗹𝗶𝗸𝗲 send link movie series 𝗲𝘁𝗰‼️", True)
-        
 
     elif query.data == 'tips':
 
@@ -797,23 +662,19 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
 
 async def auto_filter(client, msg, spoll=False):
-    reqstr1 = msg.from_user.id if msg.from_user else 0
-    reqstr = await client.get_users(reqstr1)
     if not spoll:
         message = msg
         settings = await get_settings(message.chat.id)
         if message.text.startswith("/"): return  # ignore commands
         if re.findall("((^\/|^,|^!|^\.|^[\U0001F600-\U000E007F]).*)", message.text):
             return
-        if len(message.text) < 100:
+        if 2 < len(message.text) < 100:
             search = message.text
-            files, offset, total_results = await get_search_results(message.chat.id ,search.lower(), offset=0, filter=True)
+            files, offset, total_results = await get_search_results(search.lower(), offset=0, filter=True)
             if not files:
                 if settings["spell_check"]:
-                    return await advantage_spell_chok(client, msg)
+                    return await advantage_spell_chok(msg)
                 else:
-                    if NO_RESULTS_MSG:
-                        await client.send_message(chat_id=LOG_CHANNEL, text=(script.NORSLTS.format(reqstr.id, reqstr.mention, search)))
                     return
         else:
             return
@@ -938,72 +799,60 @@ async def auto_filter(client, msg, spoll=False):
         await msg.message.delete()
 
 
-async def advantage_spell_chok(client, msg):
-    mv_id = msg.id
-    mv_rqst = msg.text
-    reqstr1 = msg.from_user.id if msg.from_user else 0
-    reqstr = await client.get_users(reqstr1)
-    settings = await get_settings(msg.chat.id)
+async def advantage_spell_chok(msg):
     query = re.sub(
         r"\b(pl(i|e)*?(s|z+|ease|se|ese|(e+)s(e)?)|((send|snd|giv(e)?|gib)(\sme)?)|movie(s)?|new|latest|br((o|u)h?)*|^h(e|a)?(l)*(o)*|mal(ayalam)?|t(h)?amil|file|that|find|und(o)*|kit(t(i|y)?)?o(w)?|thar(u)?(o)*w?|kittum(o)*|aya(k)*(um(o)*)?|full\smovie|any(one)|with\ssubtitle(s)?)",
         "", msg.text, flags=re.IGNORECASE)  # plis contribute some common words
     query = query.strip() + " movie"
-    try:
-        movies = await get_poster(mv_rqst, bulk=True)
-    except Exception as e:
-        logger.exception(e)
-        reqst_gle = mv_rqst.replace(" ", "+")
-        button = [[
-                   InlineKeyboardButton("🔎 𝖦𝗈𝗈𝗀𝗅𝖾", url=f"https://www.google.com/search?q={reqst_gle}")
-        ]]
-        if NO_RESULTS_MSG:
-            await client.send_message(chat_id=LOG_CHANNEL, text=(script.NORSLTS.format(reqstr.id, reqstr.mention, mv_rqst)))
-        k = await msg.reply_photo(
-            photo=SPELL_IMG, 
-            caption=script.I_CUDNT.format(mv_rqst),
-            reply_markup=InlineKeyboardMarkup(button)
-        )
-        await asyncio.sleep(30)
+    g_s = await search_gagala(query)
+    g_s += await search_gagala(msg.text)
+    gs_parsed = []
+    if not g_s:
+        k = await msg.reply("I couldn't find any movie in that name.")
+        await asyncio.sleep(8)
         await k.delete()
         return
+    regex = re.compile(r".*(imdb|wikipedia).*", re.IGNORECASE)  # look for imdb / wiki results
+    gs = list(filter(regex.match, g_s))
+    gs_parsed = [re.sub(
+        r'\b(\-([a-zA-Z-\s])\-\simdb|(\-\s)?imdb|(\-\s)?wikipedia|\(|\)|\-|reviews|full|all|episode(s)?|film|movie|series)',
+        '', i, flags=re.IGNORECASE) for i in gs]
+    if not gs_parsed:
+        reg = re.compile(r"watch(\s[a-zA-Z0-9_\s\-\(\)]*)*\|.*",
+                         re.IGNORECASE)  # match something like Watch Niram | Amazon Prime
+        for mv in g_s:
+            match = reg.match(mv)
+            if match:
+                gs_parsed.append(match.group(1))
+    user = msg.from_user.id if msg.from_user else 0
     movielist = []
-    if not movies:
-        reqst_gle = mv_rqst.replace(" ", "+")
-        button = [[
-                   InlineKeyboardButton("🔎 𝖦𝗈𝗈𝗀𝗅𝖾", url=f"https://www.google.com/search?q={reqst_gle}")
-        ]]
-        if NO_RESULTS_MSG:
-            await client.send_message(chat_id=LOG_CHANNEL, text=(script.NORSLTS.format(reqstr.id, reqstr.mention, mv_rqst)))
-        k = await msg.reply_photo(
-            photo=SPELL_IMG, 
-            caption=script.I_CUDNT.format(mv_rqst),
-            reply_markup=InlineKeyboardMarkup(button)
-        )
-        await asyncio.sleep(30)
+    gs_parsed = list(dict.fromkeys(gs_parsed))  # removing duplicates https://stackoverflow.com/a/7961425
+    if len(gs_parsed) > 3:
+        gs_parsed = gs_parsed[:3]
+    if gs_parsed:
+        for mov in gs_parsed:
+            imdb_s = await get_poster(mov.strip(), bulk=True)  # searching each keyword in imdb
+            if imdb_s:
+                movielist += [movie.get('title') for movie in imdb_s]
+    movielist += [(re.sub(r'(\-|\(|\)|_)', '', i, flags=re.IGNORECASE)).strip() for i in gs_parsed]
+    movielist = list(dict.fromkeys(movielist))  # removing duplicates
+    if not movielist:
+        k = await msg.reply("I couldn't find anything related to that. Check your spelling")
+        await asyncio.sleep(8)
         await k.delete()
         return
-    movielist += [movie.get('title') for movie in movies]
-    movielist += [f"{movie.get('title')} {movie.get('year')}" for movie in movies]
-    SPELL_CHECK[mv_id] = movielist
-    btn = [
-        [
-            InlineKeyboardButton(
-                text=movie_name.strip(),
-                callback_data=f"spol#{reqstr1}#{k}",
-            )
-        ]
-        for k, movie_name in enumerate(movielist)
-    ]
-    btn.append([InlineKeyboardButton(text="Close", callback_data=f'spol#{reqstr1}#close_spellcheck')])
-    fmsg = await msg.reply_photo(
-        photo=(SPELL_IMG),
-        caption="""<b><i>
-𝖨 𝖼𝗈𝗎𝗅𝖽𝗇'𝗍 𝖿𝗂𝗇𝖽 𝖺𝗇𝗒𝗍𝗁𝗂𝗇𝗀 𝗋𝖾𝗅𝖺𝗍𝖾𝖽 𝗍𝗈 𝗍𝗁𝖺𝗍
-𝖣𝗂𝖽 𝗒𝗈𝗎 𝗆𝖾𝖺𝗇 𝖺𝗇𝗒 𝗈𝗇𝖾 𝗈𝖿 𝗍𝗁𝖾𝗌𝖾?</i></b>""",
-        reply_markup=InlineKeyboardMarkup(btn))
+    SPELL_CHECK[msg.id] = movielist
+    btn = [[
+        InlineKeyboardButton(
+            text=movie.strip(),
+            callback_data=f"spolling#{user}#{k}",
+        )
+    ] for k, movie in enumerate(movielist)]
+    btn.append([InlineKeyboardButton(text="Close", callback_data=f'spolling#{user}#close_spellcheck')])
+    fmsg = await msg.reply("I couldn't find anything related to that\nDid you mean any one of these?",
+                    reply_markup=InlineKeyboardMarkup(btn))
     await asyncio.sleep(30)
     await fmsg.delete()
-
 
 async def manual_filters(client, message, text=False):
     group_id = message.chat.id
@@ -1056,233 +905,3 @@ async def manual_filters(client, message, text=False):
                 break
     else:
         return False
-
-async def global_filters(client, message, text=False):
-    settings = await get_settings(message.chat.id)
-    group_id = message.chat.id
-    name = text or message.text
-    reply_id = message.reply_to_message.id if message.reply_to_message else message.id
-    keywords = await get_gfilters('gfilters')
-    for keyword in reversed(sorted(keywords, key=len)):
-        pattern = r"( |^|[^\w])" + re.escape(keyword) + r"( |$|[^\w])"
-        if re.search(pattern, name, flags=re.IGNORECASE):
-            reply_text, btn, alert, fileid = await find_gfilter('gfilters', keyword)
-
-            if reply_text:
-                reply_text = reply_text.replace("\\n", "\n").replace("\\t", "\t")
-
-            if btn is not None:
-                try:
-                    if fileid == "None":
-                        if btn == "[]":
-                            piroxrk = await client.send_message(
-                                group_id, 
-                                reply_text, 
-                                disable_web_page_preview=True,
-                                reply_to_message_id=reply_id
-                            )
-                            manual = await manual_filters(client, message)
-                            if manual == False:
-                                settings = await get_settings(message.chat.id)
-                                try:
-                                    if settings['auto_ffilter']:
-                                        await auto_filter(client, message)
-                                        try:
-                                            if settings['auto_delete']:
-                                                await piroxrk.delete()
-                                        except KeyError:
-                                            grpid = await active_connection(str(message.from_user.id))
-                                            await save_group_settings(grpid, 'auto_delete', True)
-                                            settings = await get_settings(message.chat.id)
-                                            if settings['auto_delete']:
-                                                await piroxrk.delete()
-                                    else:
-                                        try:
-                                            if settings['auto_delete']:
-                                                await asyncio.sleep(600)
-                                                await piroxrk.delete()
-                                        except KeyError:
-                                            grpid = await active_connection(str(message.from_user.id))
-                                            await save_group_settings(grpid, 'auto_delete', True)
-                                            settings = await get_settings(message.chat.id)
-                                            if settings['auto_delete']:
-                                                await asyncio.sleep(600)
-                                                await piroxrk.delete()
-                                except KeyError:
-                                    grpid = await active_connection(str(message.from_user.id))
-                                    await save_group_settings(grpid, 'auto_ffilter', True)
-                                    settings = await get_settings(message.chat.id)
-                                    if settings['auto_ffilter']:
-                                        await auto_filter(client, message) 
-                            else:
-                                try:
-                                    if settings['auto_delete']:
-                                        await piroxrk.delete()
-                                except KeyError:
-                                    grpid = await active_connection(str(message.from_user.id))
-                                    await save_group_settings(grpid, 'auto_delete', True)
-                                    settings = await get_settings(message.chat.id)
-                                    if settings['auto_delete']:
-                                        await piroxrk.delete()
-                            
-                        else:
-                            button = eval(btn)
-                            piroxrk = await client.send_message(
-                                group_id,
-                                reply_text,
-                                disable_web_page_preview=True,
-                                reply_markup=InlineKeyboardMarkup(button),
-                                reply_to_message_id=reply_id
-                            )
-                            manual = await manual_filters(client, message)
-                            if manual == False:
-                                settings = await get_settings(message.chat.id)
-                                try:
-                                    if settings['auto_ffilter']:
-                                        await auto_filter(client, message)
-                                        try:
-                                            if settings['auto_delete']:
-                                                await piroxrk.delete()
-                                        except KeyError:
-                                            grpid = await active_connection(str(message.from_user.id))
-                                            await save_group_settings(grpid, 'auto_delete', True)
-                                            settings = await get_settings(message.chat.id)
-                                            if settings['auto_delete']:
-                                                await piroxrk.delete()
-                                    else:
-                                        try:
-                                            if settings['auto_delete']:
-                                                await asyncio.sleep(600)
-                                                await piroxrk.delete()
-                                        except KeyError:
-                                            grpid = await active_connection(str(message.from_user.id))
-                                            await save_group_settings(grpid, 'auto_delete', True)
-                                            settings = await get_settings(message.chat.id)
-                                            if settings['auto_delete']:
-                                                await asyncio.sleep(600)
-                                                await piroxrk.delete()
-                                except KeyError:
-                                    grpid = await active_connection(str(message.from_user.id))
-                                    await save_group_settings(grpid, 'auto_ffilter', True)
-                                    settings = await get_settings(message.chat.id)
-                                    if settings['auto_ffilter']:
-                                        await auto_filter(client, message) 
-                            else:
-                                try:
-                                    if settings['auto_delete']:
-                                        await piroxrk.delete()
-                                except KeyError:
-                                    grpid = await active_connection(str(message.from_user.id))
-                                    await save_group_settings(grpid, 'auto_delete', True)
-                                    settings = await get_settings(message.chat.id)
-                                    if settings['auto_delete']:
-                                        await piroxrk.delete()
-
-                    elif btn == "[]":
-                        piroxrk = await client.send_cached_media(
-                            group_id,
-                            fileid,
-                            caption=reply_text or "",
-                            reply_to_message_id=reply_id
-                        )
-                        manual = await manual_filters(client, message)
-                        if manual == False:
-                            settings = await get_settings(message.chat.id)
-                            try:
-                                if settings['auto_ffilter']:
-                                    await auto_filter(client, message)
-                                    try:
-                                        if settings['auto_delete']:
-                                            await piroxrk.delete()
-                                    except KeyError:
-                                        grpid = await active_connection(str(message.from_user.id))
-                                        await save_group_settings(grpid, 'auto_delete', True)
-                                        settings = await get_settings(message.chat.id)
-                                        if settings['auto_delete']:
-                                            await piroxrk.delete()
-                                else:
-                                    try:
-                                        if settings['auto_delete']:
-                                            await asyncio.sleep(600)
-                                            await piroxrk.delete()
-                                    except KeyError:
-                                        grpid = await active_connection(str(message.from_user.id))
-                                        await save_group_settings(grpid, 'auto_delete', True)
-                                        settings = await get_settings(message.chat.id)
-                                        if settings['auto_delete']:
-                                            await asyncio.sleep(600)
-                                            await piroxrk.delete()
-                            except KeyError:
-                                grpid = await active_connection(str(message.from_user.id))
-                                await save_group_settings(grpid, 'auto_ffilter', True)
-                                settings = await get_settings(message.chat.id)
-                                if settings['auto_ffilter']:
-                                    await auto_filter(client, message) 
-                        else:
-                            try:
-                                if settings['auto_delete']:
-                                    await piroxrk.delete()
-                            except KeyError:
-                                grpid = await active_connection(str(message.from_user.id))
-                                await save_group_settings(grpid, 'auto_delete', True)
-                                settings = await get_settings(message.chat.id)
-                                if settings['auto_delete']:
-                                    await piroxrk.delete()
-
-                    else:
-                        button = eval(btn)
-                        piroxrk = await message.reply_cached_media(
-                            fileid,
-                            caption=reply_text or "",
-                            reply_markup=InlineKeyboardMarkup(button),
-                            reply_to_message_id=reply_id
-                        )
-                        manual = await manual_filters(client, message)
-                        if manual == False:
-                            settings = await get_settings(message.chat.id)
-                            try:
-                                if settings['auto_ffilter']:
-                                    await auto_filter(client, message)
-                                    try:
-                                        if settings['auto_delete']:
-                                            await piroxrk.delete()
-                                    except KeyError:
-                                        grpid = await active_connection(str(message.from_user.id))
-                                        await save_group_settings(grpid, 'auto_delete', True)
-                                        settings = await get_settings(message.chat.id)
-                                        if settings['auto_delete']:
-                                            await piroxrk.delete()
-                                else:
-                                    try:
-                                        if settings['auto_delete']:
-                                            await asyncio.sleep(600)
-                                            await piroxrk.delete()
-                                    except KeyError:
-                                        grpid = await active_connection(str(message.from_user.id))
-                                        await save_group_settings(grpid, 'auto_delete', True)
-                                        settings = await get_settings(message.chat.id)
-                                        if settings['auto_delete']:
-                                            await asyncio.sleep(600)
-                                            await piroxrk.delete()
-                            except KeyError:
-                                grpid = await active_connection(str(message.from_user.id))
-                                await save_group_settings(grpid, 'auto_ffilter', True)
-                                settings = await get_settings(message.chat.id)
-                                if settings['auto_ffilter']:
-                                    await auto_filter(client, message) 
-                        else:
-                            try:
-                                if settings['auto_delete']:
-                                    await piroxrk.delete()
-                            except KeyError:
-                                grpid = await active_connection(str(message.from_user.id))
-                                await save_group_settings(grpid, 'auto_delete', True)
-                                settings = await get_settings(message.chat.id)
-                                if settings['auto_delete']:
-                                    await piroxrk.delete()
-
-                except Exception as e:
-                    logger.exception(e)
-                break
-    else:
-        return False 
