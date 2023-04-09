@@ -914,14 +914,13 @@ async def manual_filters(client, message, text=False):
                     await asyncio.sleep(DELETE_TIME)
                     await fmsg.delete()
 
-                
                 except Exception as e:
                     logger.exception(e)
                 break
     else:
         return False
 
-    async def global_filters(client, message, text=False):
+async def global_filters(client, message, text=False):
     group_id = message.chat.id
     name = text or message.text
     reply_id = message.reply_to_message.id if message.reply_to_message else message.id
@@ -972,4 +971,3 @@ async def manual_filters(client, message, text=False):
                 break
     else:
         return False
-
