@@ -6,7 +6,6 @@ import time
 import math
 from pyrogram.errors.exceptions.bad_request_400 import MediaEmpty, PhotoInvalidDimensions, WebpageMediaEmpty
 from Script import script
-from Script import MVS_TXT, SRS_TXT
 import pyrogram
 from database.connections_mdb import active_connection, all_connections, delete_connection, if_active, make_active, \
     make_inactive
@@ -36,6 +35,8 @@ logger.setLevel(logging.ERROR)
 BUTTONS = {}
 SPELL_CHECK = {}
 
+SRS_TXT = """.........................................................\nꜱᴇʀɪᴇꜱ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n.........................................................\nGO TO GOOGLE ➠ TYPE SERIES NAME ➠ COPY\nCORRECT NAME ➠ PASTE THIS GROUP\n\nEXAMPLE:LOKI S01E01\n\n🚱 DONT USE ➠ ':(!,./)"""
+MVS_TXT = """.........................................................\nᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n.........................................................\nGO TO GOOGLE ➠ TYPE MOVIE NAME ➠ COPY\nCORRECT NAME ➠ PASTE THIS GROUP\n\nEXAMPLE: UNCHARTED\n\n🚱 DONT USE ➠ ':(!,./)"""
 
 
 @Client.on_chat_join_request(filters.group | filters.channel)
