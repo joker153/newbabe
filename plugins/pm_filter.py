@@ -113,8 +113,8 @@ async def next_page(bot, query):
     )
     btn.insert(1,
         [ 
-            InlineKeyboardButton(f'ᴍᴏᴠɪᴇs', 'dupe'),
-            InlineKeyboardButton(f'sᴇʀɪᴇs', 'dupe'),
+            InlineKeyboardButton(f'ᴍᴏᴠɪᴇs', 'info'),
+            InlineKeyboardButton(f'sᴇʀɪᴇs', 'info'),
             InlineKeyboardButton(f'ᴛɪᴘs', 'tips')
         ]
     )
@@ -669,7 +669,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
     elif query.data == 'tips':
 
-        await query.answer("sᴇɴᴅ ᴄᴏʀʀᴇᴄᴛ ᴍᴏᴠɪᴇ/sᴇʀɪᴇs ɴᴀᴍᴇ ғᴏʀ ʙᴇᴛᴛᴇʀ ʀᴇsᴜʟᴛs .\nᴛᴏ ɢᴇᴛ ʙᴇᴛᴛᴇʀ ʀᴇsᴜʟᴛ ғᴏʀ sᴇʀɪᴇs sᴇᴀʀᴄʜ ʟɪᴋᴇ ᴇxᴀᴍᴘʟᴇ ɢɪᴠᴇɴ, Eg - Peaky Blinders S01E01\n\n © 𝐓𝐨𝐯𝐢𝐧𝐨𝐗𝐚𝐮𝐭𝐨𝐟𝐢𝐥𝐭𝐞𝐫𝐛𝐨𝐭", True)
+        await query.answer("𝖳𝗁𝗂𝗌 𝖬𝖾𝗌𝗌𝖺𝗀𝖾 𝖶𝗂𝗅𝗅 𝖡𝖾 𝖣𝖾𝗅𝖾𝗍𝖾𝖽 𝖠𝖿𝗍𝖾𝗋 5 𝖬𝗂𝗇𝗎𝗍𝖾𝗌 𝗍𝗈 𝖯𝗋𝖾𝗏𝖾𝗇𝗍 𝖢𝗈𝗉𝗒𝗋𝗂𝗀𝗁𝗍 !\n\n𝖳𝗁𝖺𝗇𝗄 𝖸𝗈𝗎 𝖥𝗈𝗋 𝖴𝗌𝗂𝗇𝗀 𝖬𝖾\n\n © 𝐓𝐨𝐯𝐢𝐧𝐨𝐗𝐚𝐮𝐭𝐨𝐟𝐢𝐥𝐭𝐞𝐫𝐛𝐨𝐭", True)
+        
+     elif query.data == 'info':
+        await query.answer(""".............................................
+
+ᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ
+
+..............................................""", True)
+    
 
     try: await query.answer('Your Results are there in Filter Button') 
 
