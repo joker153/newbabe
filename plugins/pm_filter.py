@@ -673,11 +673,11 @@ async def cb_handler(client: Client, query: CallbackQuery):
         
     elif query.data == 'series':
         
-        await query.answer(""".........................................................\nꜱᴇʀɪᴇꜱ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n.........................................................\nGO TO GOOGLE ➠ TYPE SERIES NAME ➠ COPY\nCORRECT NAME ➠ PASTE THIS GROUP\n\nEXAMPLE:LOKI S01E01\n\n🚱 DONT USE ➠ ':(!,./)""", True)
+        await query.answer(SRS_TXT, True)
         
     elif query.data == 'info':
         
-        await query.answer(""".........................................................\nᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n.........................................................\nGO TO GOOGLE ➠ TYPE MOVIE NAME ➠ COPY\nCORRECT NAME ➠ PASTE THIS GROUP\n\nEXAMPLE: UNCHARTED\n\n🚱 DONT USE ➠ ':(!,./)""", True)
+        await query.answer(MVS_TXT, True)
     
 
 
