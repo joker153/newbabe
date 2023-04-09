@@ -38,6 +38,7 @@ COLLECTION_NAME = environ.get('COLLECTION_NAME', 'Telegram_files')
 
 # Others
 APPROVED = environ.get("APPROVED_WELCOME", "on").lower()
+MAX_B_TN = environ.get("MAX_B_TN", "10")
 WELCOME_TEXT = environ.get("APPROVED_WELCOME_TEXT", "Hello {mention}\nWelcome To {title}\n\nYour Auto Approved")
 JOIN_CHANNEL_TEXT = environ.get("JOIN_CHANNEL_TEXT", "Join Our Movie Channel")
 JOIN_CHANNEL_LINK = environ.get("JOIN_CHANNEL_LINK")
