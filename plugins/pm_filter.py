@@ -671,10 +671,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
         await query.answer("𝖳𝗁𝗂𝗌 𝖬𝖾𝗌𝗌𝖺𝗀𝖾 𝖶𝗂𝗅𝗅 𝖡𝖾 𝖣𝖾𝗅𝖾𝗍𝖾𝖽 𝖠𝖿𝗍𝖾𝗋 5 𝖬𝗂𝗇𝗎𝗍𝖾𝗌 𝗍𝗈 𝖯𝗋𝖾𝗏𝖾𝗇𝗍 𝖢𝗈𝗉𝗒𝗋𝗂𝗀𝗁𝗍 !\n\n𝖳𝗁𝖺𝗇𝗄 𝖸𝗈𝗎 𝖥𝗈𝗋 𝖴𝗌𝗂𝗇𝗀 𝖬𝖾\n\n © 𝐓𝐨𝐯𝐢𝐧𝐨𝐗𝐚𝐮𝐭𝐨𝐟𝐢𝐥𝐭𝐞𝐫𝐛𝐨𝐭", True)
         
+    elif query.data == 'series':
+        
+        await query.answer(".........................................................\nꜱᴇʀɪᴇꜱ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n.........................................................\nGO TO GOOGLE ➠ TYPE SERIES NAME ➠ COPY\nCORRECT NAME ➠ PASTE THIS GROUP\n\nEXAMPLE:LOKI S01E01\n\n🚱 DONT USE ➠ ':(!,./)", True)
+        
     elif query.data == 'info':
         
-        await query.answer(".........................................................\n\nᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n\n.........................................................", True)
+        await query.answer(".........................................................\nᴍᴏᴠɪᴇ ʀᴇQᴜᴇꜱᴛ ꜰᴏʀᴍᴀᴛ\n.........................................................\nGO TO GOOGLE ➠ TYPE MOVIE NAME ➠ COPY\nCORRECT NAME ➠ PASTE THIS GROUP\n\nEXAMPLE: UNCHARTED\n\n🚱 DONT USE ➠ ':(!,./)", True)
     
+
 
     try: await query.answer('Your Results are there in Filter Button') 
 
