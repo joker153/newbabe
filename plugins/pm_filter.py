@@ -720,6 +720,8 @@ async def auto_filter(client, msg, spoll=False):
             ]
             for file in files
         ]
+        # Add logging statements
+        print(f"files: {files}, offset: {offset}, total_results: {total_results}")
     else:
         btn = [
             [
@@ -734,6 +736,8 @@ async def auto_filter(client, msg, spoll=False):
             ]
             for file in files
         ]
+        # Add logging statements
+        print(f"files: {files}, offset: {offset}, total_results: {total_results}")
     btn.insert(0, 
 
         [
