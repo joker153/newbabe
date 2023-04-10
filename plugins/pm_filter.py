@@ -825,6 +825,22 @@ async def auto_filter(client, msg, spoll=False):
     if spoll:
         await msg.message.delete()
 
+async def get_search_results(query: str, offset: int, retry: bool):
+    try:
+        results = await search(query, offset)
+        files = results["results"]
+        total_results = results["total"]
+        next_offset = results["next_offset"]
+        return files, next_offset, total_results
+    except Exception as e:
+        if retry:
+            # Retry search with corrected query
+            query = await correct_spelling(query)
+            return await get_search_results(query, offset, False)
+        else:
+            # Return default values
+            return [], "", 0
+            
 
 async def advantage_spell_chok(msg):
     query = re.sub(
